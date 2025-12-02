@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "day1/day1.h"
+#include "day1.h"
 
 void printUsage(const std::string &appName) {
   std::cout << "Usage:" << std::endl;
@@ -12,7 +12,7 @@ void printUsage(const std::string &appName) {
 
 int main(int argc, char *argv[]) {
   std::string input;
-  if (argc == 1) {
+  if (argc <= 1) {
     input = "day1/example.txt";
   } else {
     input = argv[1];

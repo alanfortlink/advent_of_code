@@ -11,7 +11,7 @@ using std::vector;
 
 class Day1 {
 public:
-  virtual int part1(const vector<string> &lines) {
+  int part1(const vector<string> &lines) {
     int current = 50;
     int zeroCount = 0;
     for (const string &line : lines) {
@@ -27,7 +27,7 @@ public:
     return zeroCount;
   }
 
-  virtual int part2(const vector<string> &lines) {
+  int part2(const vector<string> &lines) {
     int current = 50;
     int res = 0;
 
