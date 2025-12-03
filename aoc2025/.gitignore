@@ -1,1 +1,3 @@
 **/*.dSYM
+**/target
+**/Cargo.lock
