@@ -1,0 +1,174 @@
+use std::{
+    collections::{HashMap, HashSet, VecDeque},
+    fs::File,
+    io::{BufRead, BufReader},
+};
+
+fn get_lines() -> (String, Vec<String>) {
+    let mut args = std::env::args();
+
+    let input_src = if args.len() >= 2 {
+        args.nth(1).unwrap()
+    } else {
+        String::from("example.txt")
+    };
+
+    let file = File::open(input_src.clone()).unwrap();
+    let reader = BufReader::new(file);
+
+    (
+        input_src,
+        reader
+            .lines()
+            .map(|v| v.unwrap())
+            //.filter(|v| !v.is_empty())
+            .collect::<Vec<_>>(),
+    )
+}
+
+fn get_paths(
+    graph: &HashMap<String, Vec<String>>,
+    origin: &String,
+    target: &String,
+    use_stack: bool,
+) -> HashSet<String> {
+    let mut queue = VecDeque::<String>::new();
+    let mut seen = HashSet::<String>::new();
+    let mut paths = HashSet::<String>::new();
+
+    queue.push_back(origin.clone());
+
+    let mut last_path_len = 0;
+
+    while !queue.is_empty() {
+        let path = if use_stack {
+            queue.pop_back().unwrap()
+        } else {
+            queue.pop_front().unwrap()
+        };
+
+        if !use_stack && path.len() != last_path_len {
+            last_path_len = path.len();
+            seen.clear();
+        }
+
+        let curr = path.chars().skip(path.len() - 3).collect::<String>();
+
+        if &curr == target {
+            paths.insert(path);
+            continue;
+        }
+
+        if !graph.contains_key(&curr) {
+            continue;
+        }
+
+        println!(
+            "seen={} queue={} path={} curr={}",
+            seen.len(),
+            queue.len(),
+            path,
+            curr
+        );
+
+        for neigh in &graph[&curr] {
+            if path.contains(neigh) {
+                continue;
+            }
+
+            let new_path = path.to_string() + neigh;
+
+            if !seen.contains(&new_path) {
+                seen.insert(new_path.clone());
+                queue.push_back(new_path);
+            }
+        }
+    }
+
+    paths
+}
+
+fn part1() {
+    let (filename, lines) = get_lines();
+
+    if filename == "example2.txt" {
+        println!("NA");
+        return;
+    }
+
+    let graph = lines
+        .iter()
+        .map(|line| {
+            let (source, neighs) = line.split_once(": ").unwrap();
+            (
+                source.to_string(),
+                neighs
+                    .split_whitespace()
+                    .map(|v| v.to_string())
+                    .collect::<Vec<_>>(),
+            )
+        })
+        .collect::<HashMap<_, _>>();
+
+    let res = get_paths(&graph, &"you".to_string(), &"out".to_string(), false).len();
+
+    println!("{}", res);
+}
+
+fn part2() {
+    let (filename, lines) = get_lines();
+
+    if filename == "example.txt" {
+        println!("NA");
+        return;
+    }
+
+    let graph = lines
+        .iter()
+        .map(|line| {
+            let (source, neighs) = line.split_once(": ").unwrap();
+            (
+                source.to_string(),
+                neighs
+                    .split_whitespace()
+                    .map(|v| v.to_string())
+                    .collect::<Vec<_>>(),
+            )
+        })
+        .collect::<HashMap<_, _>>();
+
+    let paths_dac_fft = get_paths(&graph, &"dac".to_string(), &"fft".to_string(), true);
+    let paths_fft_dac = get_paths(&graph, &"fft".to_string(), &"dac".to_string(), true);
+
+    let paths_svr_dac = get_paths(&graph, &"svr".to_string(), &"dac".to_string(), true);
+    let paths_svr_fft = get_paths(&graph, &"svr".to_string(), &"fft".to_string(), true);
+
+    let paths_fft_out = get_paths(&graph, &"fft".to_string(), &"out".to_string(), true);
+    let paths_dac_out = get_paths(&graph, &"dac".to_string(), &"out".to_string(), true);
+
+    let res = paths_svr_dac.len() * paths_dac_fft.len() * paths_fft_out.len()
+        + paths_svr_fft.len() * paths_fft_dac.len() * paths_dac_out.len();
+
+    // for p1 in &paths_svr_fft {
+    //     for p2 in &paths_fft_dac {
+    //         for p3 in &paths_dac_out {
+    //             println!("{}{}{}", p1, p2, p3);
+    //         }
+    //     }
+    // }
+    //
+    // for p1 in &paths_svr_dac {
+    //     for p2 in &paths_dac_fft {
+    //         for p3 in &paths_fft_out {
+    //             println!("{}{}{}", p1, p2, p3);
+    //         }
+    //     }
+    // }
+
+    println!("{}", res);
+}
+
+fn main() {
+    part1();
+    part2();
+}
